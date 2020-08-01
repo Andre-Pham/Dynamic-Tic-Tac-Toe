@@ -2,12 +2,11 @@
 import copy
 import math
 
-help_message = \
-'''
-Moves should be in the form "row, column".
-So if you wanted to go to the first row, first column,
-you'd type "1, 1"
-'''
+board = [
+['_','_','_'],
+['_','_','_'],
+['_','_','_']
+]
 
 def flatten_board(board):
     '''
@@ -127,11 +126,15 @@ def create_board(num_rows, num_cols):
     '''
     return [['_' for i in range(num_cols)] for x in range(num_rows)]
 
-def apply_player_turn(board, row, col):
+def apply_player_turn(board, col):
     '''
-    Changes speficied column and row value (both starting at 1) to 'x'.
+    Changes speficied lowest column value (both starting at 1) to 'x'.
     '''
-    board[row-1][col-1] = 'x'
+    column_values = [row[col-1] for row in board]
+    for index, element in enumerate(reversed(column_values)):
+        if element == '_':
+            board[len(column_values)-1-index][col-1] = 'x'
+            break
 
 def print_current_board(board):
     '''
@@ -140,10 +143,10 @@ def print_current_board(board):
     '''
     board_print = copy.deepcopy(board)
     #Prints the numbers of the columns.
-    print('   ' + '  '.join([str(i+1) for i in range(len(board_print[0]))]))
+    print('  '.join([str(i+1) for i in range(len(board_print[0]))]))
     #Prints the numbers of the rows, and the actual rows.
     for num, row in enumerate(board_print):
-        print(f'{str(num+1)}  {"  ".join(row)}')
+        print(f'{"  ".join(row)}')
     #Prints an extra return.
     print('')
 
@@ -158,98 +161,107 @@ def take_player_turn(board):
         #Collects the player's move as coordinates.
         player_input = input('Enter your move: ')
         if player_input == 'help':
-            print(help_message)
+            print('Enter the desired column number.')
             continue
         try:
-            row = int(player_input.split(', ')[0])
-            column = int(player_input.split(', ')[-1])
-            if board[row-1][column-1] != '_':
+            column = int(player_input)
+            if '_' not in [row[column-1] for row in board]:
                 print('Invalid entry! Place taken. Try again.\n')
                 continue
             break
         except:
             print('Invalid entry! Invalid formatting. Try again.\n')
     #Applies their turn to the board.
-    apply_player_turn(board, row, column)
+    apply_player_turn(board, column)
     #Prints the current board.
     print_current_board(board)
 
 def generate_all_computer_options(board):
     '''
-    Generates a list of coordinates that the computer can take its next turn
-    at. For example, [[0, 1], [0, 2]].
-    This is done by finding all the coordinates on the board that have a value
-    of an integer. If they're an integer, they must not be taken by an 'x' or
-    'o', meaning the computer can take its turn there.
+    Generates a list of columns that the computer can take its next turn
+    at. For example, [1, 2, 3].
     '''
     computer_options = []
-    for row_index, row in enumerate(board):
-        for col_index in range(len(row)):
-            if board[row_index][col_index] == '_':
-                computer_options.append([row_index, col_index])
+    for column in range(len(board[0])):
+        if '_' in [row[column] for row in board]:
+            computer_options.append(column)
     return computer_options
 
-def simulate_computer_turn(board, row, col):
+def simulate_computer_turn(board, col, value = 'o'):
     '''
     Simulates a deep copy of the current board and applies an 'o' as the
     computer's turn at the given coordinates.
     '''
     copy_board = copy.deepcopy(board)
-    copy_board[row][col] = 'o'
+    column_values = [row[col] for row in copy_board]
+    for index, element in enumerate(reversed(column_values)):
+        if element == '_':
+            copy_board[len(column_values)-1-index][col] = value
+            break
     return copy_board
 
 def simulate_all_computer_turns(board):
     '''
-    Using the coordinates for possible turns found by
+    Using the columns for possible turns found by
     generate_all_computer_options(), it goes through each one and creates a
     copy of the board with that coordinate applied as a turn, then adds
     all the boards into a list.
     '''
     all_computer_turns = []
     computer_options = generate_all_computer_options(board)
-    for coordinate in computer_options:
-        all_computer_turns.append(simulate_computer_turn(board, coordinate[0], coordinate[1]))
+    for column in computer_options:
+        all_computer_turns.append(simulate_computer_turn(board, column))
     return all_computer_turns
+
+def options(partial, required_in_a_row):
+    '''
+    Returns every possible next board state in a list, accounting for who's
+    turn it is. So if its the computer's turn, it makes a list of all
+    the boards that could exist after the computer takes its next turn.
+    '''
+    #If its already game over, there are no moves to be made.
+    if check_if_winner_exists(partial, required_in_a_row):
+        return []
+    #If the number of 'x's is equal to the number of 'o's, its the computer's turn.
+    flattened_board = flatten_board(partial)
+    if flattened_board.count('x') == flattened_board.count('o'):
+        virtual_turn = 'o'
+    else:
+        virtual_turn = 'x'
+    #Goes through every element on board. If its '_', that is a coordinate
+    #where the computer/player can take its next turn, hence a copy of the board
+    #with that move applied is created and added to the list to be returned.
+    returned_options = []
+    for column in generate_all_computer_options(partial):
+        returned_options.append(simulate_computer_turn(partial, column, virtual_turn))
+    return returned_options
 
 def simulate_outcomes(partial, required_in_a_row, computer_or_player_winning):
     '''
     This take a board, and simulates every possible combination of outcomes
     and then returns the total outcomes where the computer wins.
     '''
-    def options(partial):
-        '''
-        Returns every possible next board state in a list, accounting for who's
-        turn it is. So if its the computer's turn, it makes a list of all
-        the boards that could exist after the computer takes its next turn.
-        '''
-        #If its already game over, there are no moves to be made.
-        if check_if_winner_exists(partial, required_in_a_row):
-            return []
-        #If the number of 'x's is equal to the number of 'o's, its the computer's turn.
-        flattened_board = flatten_board(partial)
-        if flattened_board.count('x') == flattened_board.count('o'):
-            virtual_turn = 'o'
-        else:
-            virtual_turn = 'x'
-        #Goes through every element on board. If its an integer, that is a coordinate
-        #where the computer/player can take its next turn, hence a copy of the board
-        #with that move applied is created and added to the list to be returned.
-        returned_options = []
-        for index1, row in enumerate(partial):
-            for index2, element in enumerate(row):
-                if element == '_':
-                    board_copy = copy.deepcopy(partial)
-                    board_copy[index1][index2] = virtual_turn
-                    returned_options.append(board_copy)
-        return returned_options
-
     #Backtracking method using recursion.
     if check_if_winner_exists(partial, required_in_a_row, computer_or_player_winning):
         return [partial]
     else:
         output = []
-        for augmented in options(partial):
+        for augmented in options(partial, required_in_a_row):
             output += simulate_outcomes(augmented, required_in_a_row, computer_or_player_winning)
+        return output
+
+def simulate_draws(partial, required_in_a_row):
+    '''
+    This take a board, and simulates every possible combination of outcomes
+    and then returns the total outcomes where the game ends in a draw.
+    '''
+    #Backtracking method using recursion.
+    if check_if_full_board(partial):
+        return [partial]
+    else:
+        output = []
+        for augmented in options(partial, required_in_a_row):
+            output += simulate_draws(augmented, required_in_a_row)
         return output
 
 def remove_duplicates_and_count(vlist):
@@ -273,6 +285,17 @@ def num_filtered_outcomes(board, required_in_a_row, computer_or_player_winning):
     '''
     computer_outcomes = simulate_outcomes(board, required_in_a_row, computer_or_player_winning)
     return remove_duplicates_and_count(computer_outcomes)
+
+def num_filtered_draws(board, required_in_a_row): #New
+    '''
+    Removes all the duplicates from the list of possible future outcomes that
+    were simulated, then returns the length of the list.
+    If computer_or_player_winning is 'computer', it returns the number of outcomes
+    where the computer wins. If computer_or_player_winning is 'player', it returns
+    the number of outcomes where the player wins (i.e. the computer loses).
+    '''
+    draw_outcomes = simulate_draws(board, required_in_a_row)
+    return remove_duplicates_and_count(draw_outcomes)
 
 def find_optimal_computer_turn(board, required_in_a_row):
     '''
@@ -301,7 +324,8 @@ def find_optimal_computer_turn(board, required_in_a_row):
         print(f'Computer thinking... {percentage_progress}%')
         scores.append( \
             num_filtered_outcomes(simulation, required_in_a_row, 'computer') \
-            - num_filtered_outcomes(simulation, required_in_a_row, 'player'))
+            - 1.5 * num_filtered_outcomes(simulation, required_in_a_row, 'player') \
+            + 0.1 * num_filtered_draws(simulation, required_in_a_row)) #These weights are not optmised.
         percentage_progress += percentage_gain
     #The greatest score is the largest one. Returns the move with the greatest score.
     best_option_index = scores.index(max(scores))
@@ -309,9 +333,13 @@ def find_optimal_computer_turn(board, required_in_a_row):
 
 def apply_computer_turn(board, optimal_turn):
     '''
-    Changes the specified location on the board to an 'o'.
+    Changes speficied lowest column value (both starting at 0) to 'o'.
     '''
-    board[optimal_turn[0]][optimal_turn[1]] = 'o'
+    column_values = [row[optimal_turn] for row in board]
+    for index, element in enumerate(reversed(column_values)):
+        if element == '_':
+            board[len(column_values)-1-index][optimal_turn] = 'o'
+            break
 
 def gain_valid_int_input(message):
     '''
