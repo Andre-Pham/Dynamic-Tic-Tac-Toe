@@ -93,7 +93,7 @@ def common_text_output():
         height=3,
         font=FONT,
         bg=TEXTBOX_COLOR,
-        fg=TEXT_COLOR
+        fg=TEXT_COLOR_HIGHLIGHT
     )
 
 def common_board_space():
@@ -149,8 +149,6 @@ class Interface:
         self.num_of_rows = 3
         self.num_of_cols = 3
         self.num_to_win = 3
-
-        self.num_of_spaces = self.num_of_rows*self.num_of_cols
 
         self.board = None
 
@@ -234,6 +232,9 @@ class Interface:
         self.drawn_elements = []
 
         self.game_board_elements = []
+
+        # Reset text inside text output widget
+        self.game_board_additional_elements[1] = common_text_output()
 
         window.geometry(f"{self.num_of_cols*125}x{self.num_of_rows*155}")
 
@@ -322,27 +323,30 @@ class Interface:
         )
 
     def take_computer_turn(self):
-        self.board.apply_computer_turn(self.board.find_optimal_computer_turn())
 
-        space_index = 0
-        for row in self.board.game_board:
-            for space in row:
-                if space == "x":
-                    self.game_board_elements[space_index].configure(
-                        text="x",
-                        bg=PLAYER_COLOR
-                    )
-                elif space == "o":
-                    self.game_board_elements[space_index].configure(
-                        text="o",
-                        bg=COMPUTER_COLOR
-                    )
-                space_index += 1
+        computer_turn = self.board.find_optimal_computer_turn()
+        self.board.apply_computer_turn(computer_turn)
+
+        space_index = computer_turn[0]*self.num_of_cols + computer_turn[1]
+        self.game_board_elements[space_index].configure(
+            text="o",
+            bg=COMPUTER_COLOR
+        )
+
+        if self.board.check_if_winner_exists():
+            self.game_board_additional_elements[1].configure(
+                text="The computer won!!!",
+                bg=COMPUTER_COLOR
+            )
+        elif self.board.check_if_full_board():
+            self.game_board_additional_elements[1].configure(
+                text="It's a draw!!!",
+                fg=TEXT_COLOR
+            )
 
     def take_player_turn(self, space_index):
         flattened_board = self.board.flatten_board()
-        print(space_index)
-        if flattened_board.count("x") == flattened_board.count("o") or flattened_board[space_index] != "_":
+        if flattened_board.count("x") == flattened_board.count("o") or flattened_board[space_index] != "_" or self.board.check_if_winner_exists():
             return
 
         column_index = int(space_index%self.num_of_cols)
@@ -350,74 +354,28 @@ class Interface:
 
         self.board.apply_player_turn(row_index, column_index)
 
-        space_index = 0
-        for row in self.board.game_board:
-            for space in row:
-                if space == "x":
-                    self.game_board_elements[space_index].configure(
-                        text="x",
-                        bg=PLAYER_COLOR
-                    )
-                elif space == "o":
-                    self.game_board_elements[space_index].configure(
-                        text="o",
-                        bg=COMPUTER_COLOR
-                    )
-                space_index += 1
+        self.game_board_elements[space_index].configure(
+            text="x",
+            bg=PLAYER_COLOR
+        )
 
-        self.take_computer_turn()
+        if self.board.check_if_winner_exists():
+            self.game_board_additional_elements[1].configure(
+                text="You won!!!",
+                bg=PLAYER_COLOR
+            )
+        elif self.board.check_if_full_board():
+            self.game_board_additional_elements[1].configure(
+                text="It's a draw!!!"
+            )
+        else:
+            self.take_computer_turn()
 
     def start_game(self):
         self.board = Board(self.num_to_win, self.num_of_rows, self.num_of_cols, True)
 
         self.take_computer_turn()
-        '''
-        while True:
 
-            space_index = 0
-            for row in self.board.game_board:
-                for space in row:
-                    if space == "x":
-                        self.game_board_elements[space_index].configure(
-                            text="x"
-                        )
-                    elif space == "o":
-                        self.game_board_elements[space_index].configure(
-                            text="o"
-                        )
-                    space_index += 1
-
-            board.apply_computer_turn(board.find_optimal_computer_turn())
-            print('Computer takes turn:')
-            board.print_current_board()
-            if board.check_if_winner_exists():
-                print('The computer won!!!')
-                break
-            if board.check_if_full_board():
-                print('It\'s a draw!!!')
-                break
-
-            space_index = 0
-            for row in self.board.game_board:
-                for space in row:
-                    if space == "x":
-                        self.game_board_elements[space_index].configure(
-                            text="x"
-                        )
-                    elif space == "o":
-                        self.game_board_elements[space_index].configure(
-                            text="o"
-                        )
-                    space_index += 1
-
-            board.take_player_turn()
-            if board.check_if_winner_exists():
-                print('You won!!!')
-                break
-            if board.check_if_full_board():
-                print('It\'s a draw!!!')
-                break
-        '''
 
 # Set up window
 window = tk.Tk()

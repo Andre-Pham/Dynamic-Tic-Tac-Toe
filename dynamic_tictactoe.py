@@ -26,7 +26,7 @@ class Board:
             board = self.game_board
         return [element for sublist in board for element in sublist]
 
-    def check_if_winner_exists(self, board=None, competitor = 'either'):
+    def check_if_winner_exists(self, board=None, competitor='either'):
         '''
         Checks if there is a certain number of elements in a row on the board,
         that be vertically, horizontally or diagonally. If so, it returns True.
