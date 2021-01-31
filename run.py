@@ -366,13 +366,14 @@ class Interface:
             )
         elif self.board.check_if_full_board():
             self.game_board_additional_elements[1].configure(
-                text="It's a draw!!!"
+                text="It's a draw!!!",
+                fg=TEXT_COLOR
             )
         else:
             self.take_computer_turn()
 
     def start_game(self):
-        self.board = Board(self.num_to_win, self.num_of_rows, self.num_of_cols, True)
+        self.board = Board(self.num_to_win, self.num_of_rows, self.num_of_cols)
 
         self.take_computer_turn()
 

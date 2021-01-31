@@ -10,11 +10,10 @@ you'd type "1, 1"
 '''
 
 class Board:
-    def __init__(self, required_in_a_row, num_of_rows, num_of_cols, speed_turn_one):
+    def __init__(self, required_in_a_row, num_of_rows, num_of_cols):
         self.required_in_a_row = required_in_a_row
         self.num_of_rows = num_of_rows
         self.num_of_cols = num_of_cols
-        self.speed_turn_one = speed_turn_one
 
         self.game_board = self.create_board(num_of_rows, num_of_cols)
 
@@ -352,7 +351,7 @@ class Board:
         percentage_gain = 100/len(list_of_options)
         progress = 0
         #If the player doesn't want to wait for turn 1, it can instantly be generated.
-        if self.speed_turn_one and self.check_if_first_turn():
+        if self.check_if_first_turn():
             return [(len(self.game_board) - 1)//2, (len(self.game_board[0]) - 1)//2]
         #Generates scores in the same index for each option, in a list.
         scores = []
