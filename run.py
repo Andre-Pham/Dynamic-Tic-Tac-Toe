@@ -1,6 +1,7 @@
 
 import tkinter as tk
 import sys
+from threading import Thread
 
 from dynamic_tictactoe import *
 
@@ -322,7 +323,39 @@ class Interface:
             text=f"To Win: {self.num_to_win}"
         )
 
+    def refresh_progress(self):
+
+        if self.board.check_if_winner_exists() or self.board.check_if_full_board():
+            return
+
+        self.game_board_additional_elements[1].configure(
+            text=f"Computer's turn! - Calculating...0%",
+            fg=TEXT_COLOR
+        )
+
+        self.board.progress = 0
+        check_change = 0
+        while (not self.board.check_if_winner_exists() and
+                not self.board.check_if_full_board() and
+                self.board.flatten_board().count("x") ==
+                self.board.flatten_board().count("o")):
+            print("is looping")
+            if check_change < self.board.progress:
+                check_change = self.board.progress
+                self.game_board_additional_elements[1].configure(
+                    text=f"Computer's turn! - Calculating...{round(self.board.progress)}%",
+                    fg=TEXT_COLOR
+                )
+                window.update_idletasks()
+
+        self.game_board_additional_elements[1].configure(
+            text=f"Your turn!",
+            fg=TEXT_COLOR
+        )
+
     def take_computer_turn(self):
+
+        #Thread(target=self.refresh_progress).start()
 
         computer_turn = self.board.find_optimal_computer_turn()
         self.board.apply_computer_turn(computer_turn)
@@ -358,6 +391,7 @@ class Interface:
             text="x",
             bg=PLAYER_COLOR
         )
+        window.update_idletasks()
 
         if self.board.check_if_winner_exists():
             self.game_board_additional_elements[1].configure(
@@ -370,7 +404,13 @@ class Interface:
                 fg=TEXT_COLOR
             )
         else:
-            self.take_computer_turn()
+            # Threads are used so that
+            # 1. Progress can be updated in real time with calculations
+            # 2. Interface doesn't stop responding from interactions
+            Thread(target=self.take_computer_turn).start()
+            Thread(target=self.refresh_progress).start()
+            #self.refresh_progress()
+
 
     def start_game(self):
         self.board = Board(self.num_to_win, self.num_of_rows, self.num_of_cols)

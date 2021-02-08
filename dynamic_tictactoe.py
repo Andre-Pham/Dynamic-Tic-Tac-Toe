@@ -17,6 +17,8 @@ class Board:
 
         self.game_board = self.create_board(num_of_rows, num_of_cols)
 
+        self.progress = 0
+
     def flatten_board(self, board=None):
         '''
         Empties nested lists into a flat list and returns it.
@@ -349,7 +351,7 @@ class Board:
                 return list_of_options[list_of_options_simulated.index(sim)]
         #Percentage gain and progress, because generation can sometimes take a while.
         percentage_gain = 100/len(list_of_options)
-        progress = 0
+        self.progress = 0
         #If the player doesn't want to wait for turn 1, it can instantly be generated.
         if self.check_if_first_turn():
             return [(len(self.game_board) - 1)//2, (len(self.game_board[0]) - 1)//2]
@@ -360,12 +362,12 @@ class Board:
             #Code for showing the player the progress of the computer's turn.
             if percentage_gain < 8:
                 if percentage_gain < 6:
-                    print(f'Computer processing... {round(progress)}%')
-                    progress += percentage_gain
+                    print(f'Computer processing... {round(self.progress)}%')
+                    self.progress += percentage_gain
                 else:
                     if num%2 == 0:
-                        print(f'Computer processing... {round(progress)}%')
-                    progress += percentage_gain
+                        print(f'Computer processing... {round(self.progress)}%')
+                    self.progress += percentage_gain
             ########################################################################
             scores.append(self.generate_score_for_simulation(sim))
         #Return to the next row in the console, if required.
