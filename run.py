@@ -1,6 +1,7 @@
 
 import tkinter as tk
 import sys
+import time
 from threading import Thread
 
 from dynamic_tictactoe import *
@@ -153,6 +154,8 @@ class Interface:
 
         self.board = None
 
+        self.kill_all_threads = False
+
         # Set properties of interface
         window.geometry(geometry)
         window.title(title)
@@ -203,6 +206,7 @@ class Interface:
         '''
         Changes all elements on the interface to display main menu page.
         '''
+        self.kill_all_threads = True
         self.clear_all()
         self.drawn_elements = []
 
@@ -229,6 +233,7 @@ class Interface:
         '''
         Changes all elements on the interface to display 'text to visrep' page.
         '''
+        self.kill_all_threads = False
         self.clear_all()
         self.drawn_elements = []
 
@@ -338,7 +343,8 @@ class Interface:
         while (not self.board.check_if_winner_exists() and
                 not self.board.check_if_full_board() and
                 self.board.flatten_board().count("x") ==
-                self.board.flatten_board().count("o")):
+                self.board.flatten_board().count("o") and
+                not self.kill_all_threads):
             print("is looping")
             if check_change < self.board.progress:
                 check_change = self.board.progress
@@ -347,6 +353,7 @@ class Interface:
                     fg=TEXT_COLOR
                 )
                 window.update_idletasks()
+            time.sleep(0.25)
 
         self.game_board_additional_elements[1].configure(
             text=f"Your turn!",
