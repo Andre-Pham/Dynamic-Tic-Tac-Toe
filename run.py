@@ -180,7 +180,7 @@ class Interface:
         self.game_board_elements = []
 
         self.game_board_additional_elements = [
-            common_title("Objective: 3 in a row! (Computer's turn)"),
+            common_title("Objective: 3 in a row!"),
             common_text_output(),
             common_button("Back to Menu", lambda: self.draw_main_menu())
         ]
@@ -231,7 +231,7 @@ class Interface:
 
     def draw_game_board(self):
         '''
-        Changes all elements on the interface to display 'text to visrep' page.
+        Changes all elements on the interface to display game board.
         '''
         self.kill_all_threads = False
         self.clear_all()
@@ -241,6 +241,11 @@ class Interface:
 
         # Reset text inside text output widget
         self.game_board_additional_elements[1] = common_text_output()
+
+        # Set the objective text to say the correct objective
+        self.game_board_additional_elements[0].configure(
+            text=f"Objective: {self.num_to_win} in a row!",
+        )
 
         window.geometry(f"{self.num_of_cols*125}x{self.num_of_rows*155}")
 
@@ -376,7 +381,8 @@ class Interface:
         if self.board.check_if_winner_exists():
             self.game_board_additional_elements[1].configure(
                 text="The computer won!!!",
-                bg=COMPUTER_COLOR
+                bg=COMPUTER_COLOR,
+                fg=TEXT_COLOR_HIGHLIGHT
             )
         elif self.board.check_if_full_board():
             self.game_board_additional_elements[1].configure(
@@ -385,6 +391,8 @@ class Interface:
             )
 
     def take_player_turn(self, space_index):
+        #The player can always "take their turn", but their actions are only
+        #registered when the computer has completed its turn
         flattened_board = self.board.flatten_board()
         if flattened_board.count("x") == flattened_board.count("o") or flattened_board[space_index] != "_" or self.board.check_if_winner_exists():
             return
@@ -403,7 +411,8 @@ class Interface:
         if self.board.check_if_winner_exists():
             self.game_board_additional_elements[1].configure(
                 text="You won!!!",
-                bg=PLAYER_COLOR
+                bg=PLAYER_COLOR,
+                fg=TEXT_COLOR_HIGHLIGHT
             )
         elif self.board.check_if_full_board():
             self.game_board_additional_elements[1].configure(
@@ -423,6 +432,10 @@ class Interface:
         self.board = Board(self.num_to_win, self.num_of_rows, self.num_of_cols)
 
         self.take_computer_turn()
+        self.game_board_additional_elements[1].configure(
+            text=f"Your turn!",
+            fg=TEXT_COLOR
+        )
 
 
 # Set up window
