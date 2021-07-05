@@ -5,5 +5,5 @@ Supported on both Windows and MacOS. Note that this was built before I properly 
 
 **Short Demo (Longer Demo in Repository):**
 
-![Short Demo](Short Demo.gif) 
+![](Short Demo.gif) 
 
