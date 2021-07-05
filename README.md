@@ -3,7 +3,7 @@ Tic-tac-toe game in which the computer plays the user and either draws or wins. 
 
 Supported on both Windows and MacOS. Note that this was built before I properly learnt to design software using OOP.
 
-**Demo:**
+**Short Demo (Longer Demo in Repository):**
 
-<video src="Demo of use.mp4"></video>
+![Short Demo](Demo/Short Demo.gif) 
 
