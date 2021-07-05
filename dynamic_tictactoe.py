@@ -22,6 +22,8 @@ class Board:
     def flatten_board(self, board=None):
         '''
         Empties nested lists into a flat list and returns it.
+        Note: (col_index + num_of_rows*row_index) is the algorithm to convert
+        a board coordinate to a flattened board index
         '''
         if board == None:
             board = self.game_board
@@ -299,6 +301,29 @@ class Board:
             return True
         return False
 
+    def find_player_win_coordinates(self):
+        '''
+        This identifies all the indices on a flattened board where if the player
+        were make their next move, they would win. Returns an array of integers.
+        If there are no winning indices, returns an empty list.
+        '''
+        win_indices = []
+
+        empty_spaces = []
+        for row_index, row in enumerate(self.game_board):
+            for col_index in range(len(row)):
+                if self.game_board[row_index][col_index] == '_':
+                    empty_spaces.append([row_index, col_index])
+
+        for i in range(len(empty_spaces)):
+            copy_board = copy.deepcopy(self.game_board)
+            space = empty_spaces[i]
+            row_index, col_index = space[0], space[1]
+            copy_board[row_index][col_index] = 'x'
+            if self.check_if_winner_exists(copy_board):
+                win_indices.append([row_index, col_index])
+        return win_indices
+
     def subtract_scores_indices(self):
         '''
         This identifies all the indices of coordinates that form the perimeter of
@@ -321,11 +346,11 @@ class Board:
         #These are the indices of the flattened board that form the perimeter.
         perimeter_indices = set()
         for i in range(0, self.num_of_rows*self.num_of_cols, self.num_of_cols):
-            perimeter_indices.add(i)
-            perimeter_indices.add(i-1+self.num_of_cols)
+            perimeter_indices.add(i) #Left
+            perimeter_indices.add(i-1+self.num_of_cols) #Right
         for i in range(0, self.num_of_rows):
-            perimeter_indices.add(i)
-            perimeter_indices.add(i+self.num_of_rows*(self.num_of_cols-1))
+            perimeter_indices.add(i) #Top
+            perimeter_indices.add(len(flattened_board)-1-i) #Bottom
         #This selects indices of the flattened function that are empty, and part
         #of the perimeter, and allocates the correct index to each, indicated
         #by the index_counter.
@@ -349,6 +374,13 @@ class Board:
         for sim in list_of_options_simulated:
             if self.check_if_winner_exists(sim):
                 return list_of_options[list_of_options_simulated.index(sim)]
+        #If the player wins next turn, the computer must block them. This was
+        #implemented because the computer would be greedy and try to win despite
+        #the player's moves, causing it to lose on a 3x6 board when the player
+        #selected (2,2), (3,2), (1,2)
+        player_win_indices = self.find_player_win_coordinates()
+        if len(player_win_indices) > 0:
+            return player_win_indices[0]
         #Percentage gain and progress, because generation can sometimes take a while.
         percentage_gain = 100/len(list_of_options)
         self.progress = 0
