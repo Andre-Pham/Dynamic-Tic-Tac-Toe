@@ -188,7 +188,7 @@ class Board:
             except:
                 print('Invalid entry! Invalid formatting. Try again.\n')
         #Applies their turn to the board.
-        self.apply_player_turn(row, column)
+        self.apply_player_turn(row-1, column-1)
         #Prints the current board.
         self.print_current_board()
 
@@ -433,25 +433,15 @@ def gain_valid_int_input(message):
         except:
             print('Invalid input! Try again.\n')
 
-#Game start
+#Game start (run game in terminal)
 if __name__ == "__main__":
     #Game setup.
     required_in_a_row_input = gain_valid_int_input('How many is required in a row to win? ')
     num_of_rows = gain_valid_int_input('How many rows for the game board? ')
     num_of_cols = gain_valid_int_input('How many columns for the game board? ')
-    speed_turn_one = False
-    while True:
-        ask = input('Speed up computer\'s first turn? (yes/no) ')
-        if ask == 'yes':
-            speed_turn_one = True
-            break
-        elif ask == 'no':
-            break
-        else:
-            print('Invalid input! Try again.\n')
     print('During your turn, type "help" for help.')
     print('Computer goes first!\n')
-    board = Board(required_in_a_row_input, num_of_rows, num_of_cols, speed_turn_one)
+    board = Board(required_in_a_row_input, num_of_rows, num_of_cols)
     while True:
         board.apply_computer_turn(board.find_optimal_computer_turn())
         print('Computer takes turn:')
